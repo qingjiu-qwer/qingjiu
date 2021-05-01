@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <style type="text/css">
+            * {
+                padding: 0;
+                margin: 0;
+            }
+
+            #mycan {
+                background-color: aquamarine;
+                margin: 50px auto;
+                display: block;
+            }
+            .header{
+            	width: 800px;
+            	margin: 0 auto;
+            }
+            #big{
+            	margin: 0 auto;
+            	width: 50px;
+            	height: 50px;
+            	margin: 0 0 0 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+        	<button onclick="restart()" style="width: 60px;
+            	height: 50px;">重新开始</button>
+        	<button id="big">悔棋</button>
+        </div>
+        
+        
+        <canvas id="mycan" width="900" height="900"></canvas>
+    </body>
+    <script type="text/javascript">
+    	
+        function restart(){
+            mycan.width = 900;
+            mycan.height = 900;
+            init();
+            drawChess();
+            mycan.onclick = mycanClick;
+        }
+        
+        var mycan;
+        var ctx;
+        var firstBlack;
+        var chessesArr;
+        ///step  --->几 偶   7 【123456】0 1 2
+        //
+        function init(){
+            mycan = document.getElementById("mycan");
+            ctx = mycan.getContext("2d");
+            
+            //03-1：区分黑白棋子
+            firstBlack = true;
+            
+            //04-1：棋盘落子数据：用二维数组记录落子位置及黑白状态
+            
+            //chesses[][]=0,1,2
+            // (两个下标表示棋子位置(和x、y坐标相关)，
+            // 数组元素值表示此位置是：没有棋子0，或黑子1，或白子2)
+            chessesArr = new Array(15);
+            //初始状态棋盘上没有棋子，所有二维数组全为0
+            for (var i = 0; i < chessesArr.length; i++) {
+                chessesArr[i] = new Array(15).fill(0);
+            }
+            console.log(chessesArr);
+            
+            
+        }
+        init();
+        
+        function drawChess(){
+            for (var i = 1; i <= 15; i++) {
+                ctx.moveTo(100, 50 + i * 50);
+                ctx.lineTo(800, 50 + i * 50);
+            
+                ctx.moveTo(50 + i * 50, 100);
+                ctx.lineTo(50 + i * 50, 800);
+            }
+            ctx.stroke();
+        }
+        
+        drawChess();
+
+        //02：落子
+        //02-1单击棋盘（实际上单击canvas），在对应位置上绘制棋子
+        mycan.onclick = mycanClick;
+        
+        function mycanClick(ev) {
+            // alert('落子！')
+            ev = ev || event;
+            //02-2计算单击位置，相对于画布的坐标系（0，0）
+            var x = ev.pageX - this.offsetLeft;
+            var y = ev.pageY - this.offsetTop;
+            console.log(x, y);
+            //02-3计算出棋子的中心点位置
+
+            var centerX = Math.round(x / 50) * 50;  
+            console.log(centerX);
+            var centerY = Math.round(y / 50) * 50;
+            if (centerX < 100) {
+                centerX = 100;
+            }
+            if (centerY < 100) {
+                centerY = 100;
+            }
+            if (centerX > 800) {
+                centerX = 800;
+            }
+            if (centerY > 800) {
+                centerY = 800;
+            }
+            console.log(centerX, centerY);
+
+            //04-2：由绘制棋子的位置坐标转化成二维数组的两个下标row，col
+            var row, col;
+
+            // 100,100====>0,0
+            // 150,750==>13,1
+            //100,800====>14,0
+
+            row = (centerY - 100) / 50
+            col = (centerX - 100) / 50
+            //04-3：判断此处是否有棋子
+            if (chessesArr[row][col] != 0) {
+                alert("此处有棋子");
+                return;
+            }
+			
+			
+			
+			
+			
+            //02-4根据计算出的棋子中心点位置，绘制棋子(实心圆)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
+
+			
+	
+			
+            //03-2：区分黑白棋子
+            if (firstBlack) {
+                ctx.fillStyle = 'black';
+                //更新棋盘数组
+                chessesArr[row][col] = 1; //黑子
+
+            } else {
+                ctx.fillStyle = 'white';
+                //更新棋盘数组
+                chessesArr[row][col] = 2 //白子
+            }
+            ctx.fill();
+
+            //05-判断胜负
+            setTimeout(function() {
+                winner(row, col);
+            }, 20)
+
+
+            setTimeout(function() {
+                firstBlack = !firstBlack;
+            }, 50)
+
+				
+       	var aa=document.getElementById('big');
+    	aa.onclick=function(){
+    		ctx.clearRect(centerX-20,centerY-20,50,50);
+    		if((centerX>=150&&centerX<=750)&&centerY==100){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX,centerY+30);
+    			ctx.moveTo(centerX-20,centerY);
+    			ctx.lineTo(centerX+30,centerY);
+    			ctx.stroke(); 
+    			firstBlack = !firstBlack;
+    		}else if((centerX>=150&&centerX<=750)&&centerY==800){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY-30);
+    			ctx.lineTo(centerX,centerY);
+    			ctx.moveTo(centerX-20,centerY);
+    			ctx.lineTo(centerX+30,centerY);
+    			ctx.stroke(); 
+    			console.log(11);
+    			firstBlack = !firstBlack;
+    		}else if((centerY>=150&&centerY<=750)&&centerX==100){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY-20);
+    			ctx.lineTo(centerX,centerY+30);
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX+30,centerY);
+    			ctx.stroke(); 
+    			firstBlack = !firstBlack;
+    		}else if((centerY>=150&&centerY<=750)&&centerX==800){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY-20);
+    			ctx.lineTo(centerX,centerY+30);
+    			ctx.moveTo(centerX-20,centerY);
+    			ctx.lineTo(centerX,centerY);
+    			ctx.stroke(); 
+    			firstBlack = !firstBlack;
+    		}else if(centerX==100&&centerY==100){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX,centerY+30);
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX+30,centerY);
+    			ctx.stroke(); 
+    			firstBlack = !firstBlack;
+    		}else if(centerX>100&&centerY>100){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY-20);
+    			ctx.lineTo(centerX,centerY+30);
+    			ctx.moveTo(centerX-20,centerY);
+    			ctx.lineTo(centerX+30,centerY);
+    			ctx.stroke(); 
+    			firstBlack = !firstBlack;
+    		}else if(centerX==100&&centerY==800){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX,centerY-20);
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX+30,centerY);
+    			ctx.stroke(); 
+    			firstBlack = !firstBlack;
+    		}else if(centerX==800&&centerY==100){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX-20,centerY);
+    			ctx.moveTo(centerX,centerY);
+    			ctx.lineTo(centerX,centerY+30);
+    			ctx.stroke(); 
+    			firstBlack = !firstBlack;
+    		}else if(centerX==800&&centerY==800){
+    			chessesArr[row][col] = 0;
+    			ctx.beginPath();
+    			ctx.moveTo(centerX-20,centerY);
+    			ctx.lineTo(centerX,centerY);
+    			ctx.moveTo(centerX,centerY-30);
+    			ctx.lineTo(centerX,centerY);
+    			ctx.stroke(); 
+    			console.log(11);
+    			firstBlack = !firstBlack;
+    		}	
+    	}
+            console.log(chessesArr);
+        }
+
+        function winner(row, col) {
+            //通过四个方向来进行判断，行方向，列方向，正斜方向，反斜方向
+            if (winnerRow(row, col) || winnerCol(row, col) || winner1(row, col) || winner2(row, col)) {
+                alert(firstBlack ? "黑方胜" : "白方胜")
+                //棋盘不能再点击
+                mycan.onclick = null;
+            }
+        }
+        //判断当前行中是否有五子相连情况
+        function winnerRow(row, col) {
+            var n = 0;
+            
+            //以上四个for代码简写以下两个for
+            
+            for (var i = col; i >= 0; i--) {
+                //统计当前位置及左边连续的相同颜色棋子个数
+                if (firstBlack + chessesArr[row][i] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+
+            for (var i = col + 1; i <= 14; i++) {
+                 //统计当前位置的右边连续的相同颜色棋子个数
+                if (firstBlack + chessesArr[row][i] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+            return n >= 5;
+
+        }
+
+        ////判断当前列中是否有五子相连情况
+        function winnerCol(row, col) {
+            var n = 0;
+            for (var i = row; i >= 0; i--) {
+                //统计当前位置及上边连续的相同颜色棋子个数
+                if (firstBlack + chessesArr[i][col] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+            
+            for (var i = row + 1; i <= 14; i++) {
+                 //统计当前位置的下边连续的相同颜色棋子个数
+                if (firstBlack + chessesArr[i][col] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+            return n >= 5;
+        }
+        ////判断当前位置正斜方向是否有五子相连情况
+        function winner1(row, col) {
+            var n = 0;
+            for (var i = row,k = col; i>=0 && k>=0 ; i--,k--) {
+                //统计当前位置及左上方连续的相同颜色棋子个数
+                if (firstBlack + chessesArr[i][k] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+            
+            for (var i = row+1,k = col+1; i<15 && k<15 ; i++,k++) {
+                 //统计当前位置的右下方连续的相同颜色棋子个数
+                if (firstBlack + chessesArr[i][k] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+            return n >= 5;
+        }
+        //判断当前位置反斜方向是否有五子相连情况
+        function winner2(row, col) {
+            var n = 0;
+            //统计当前位置及右上方连续的相同颜色棋子个数
+            for (var i = row,k = col; i>=0 && k<15 ; i--,k++) {
+                
+                if (firstBlack + chessesArr[i][k] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+            
+            //统计当前位置的左下方连续的相同颜色棋子个数
+            for (var i = row+1,k = col-1; i<15 && k>=0; i++,k--) {
+                 
+                if (firstBlack + chessesArr[i][k] == 2) {
+                    n++;
+                } else {
+                    break;
+                }
+            }
+            return n >= 5;
+        }
+       
+    </script>
+</html>
